@@ -1,0 +1,28 @@
+version: '3'
+services:
+          
+  ipfs:
+    image: jbenet/go-ipfs
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+      - "8880:8080"
+    volumes:
+      - .docker/ipfs-data:/data/ipfs/
+      - .docker/.ipfs-staging:/export
+
+  eth-node:
+    image: kauriorg/parity-docker
+    ports:
+      - "8545:8545"
+    volumes:
+      - .docker/.ethereum_data:/root/.local/share/io.parity.ethereum
+      - .docker/.ethereum_log:/data/parity-logs
+    environment:
+      TRANSFER_AMOUNT: 10
+      TRANSFER_ACCOUNTS: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57,0xf17f52151EbEF6C7334FAD080c5704D77216b732,0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef
+    networks:
+      - default
+
+networks:
+  default:
