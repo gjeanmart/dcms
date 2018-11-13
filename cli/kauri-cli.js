@@ -5,6 +5,7 @@
 const program 	= require('caporal');
 const Kauri 	= require('../index');
 const config 	= require('../config.js');
+const db 		= require('../db.js');
 const fs 		= require("fs");
 const path 		= require("path");
 const mime 		= require('mime');
@@ -40,6 +41,7 @@ program
             conf.registry = res.registry.instance.address;
 
             config.write(conf);
+            db.delete();
 
             logger.info('Registry deployed to ' + conf.registry + '');
 
@@ -53,7 +55,7 @@ program
 // SPACE [REMOTE]
 
 program
-  	.command('content new')
+  	.command('space create')
     .description('Create a new empty space in the registry')
     .argument('<space>', 'Space name')
   	.option('-o, --owner [owner]', 'Owner of the space (Ethereum address)')
@@ -76,10 +78,10 @@ program
   	});
 
 program
-    .command('content push')
-    .description('Push a revision')
-    .argument('<space>', 'Space')
-    .argument('<revision>', 'Revision')
+    .command('space push')
+    .description('Push a specific revision in a space')
+    .argument('<space>', 'Space name')
+    .argument('<revision>', 'Revision hash or "all"')
     .action(async function (args, options, logger) {
 
         try {
@@ -89,9 +91,21 @@ program
         	}
 
             let kauri = await Kauri.init(config.read());
-            let res = await kauri.pushRevision(args.space, args.revision);
 
-            logger.info(res);
+            if(args.revision == 'all') {
+            	db.getRevisions(args.space).map(async function(r) { 
+            		console.log("r="+r)
+            		await kauri.pushRevision(args.space, r); 
+            		console.log("remove")
+            		db.removeRevision(args.space, r);
+            		console.log("OK")
+            	});
+            } else {
+            	let res = await kauri.pushRevision(args.space, args.revision);
+            	db.removeRevision(args.space, args.revision);
+            }
+
+            logger.info("revision(s) pushed");
 
         } catch(err) {
             logger.error('Error Pushing the revision ' + args.revision + ' to space ' + args.space + ' >>> ' + err);
@@ -99,7 +113,7 @@ program
     });
 
  program
-    .command('content all')
+    .command('space all')
     .description('Get all spaces')
     .action(async function (args, options, logger) {
 
@@ -124,10 +138,9 @@ program
     });
 
 program
-  	.command('content info')
+  	.command('space info')
   	.description('Get info about a space')
-    .argument('<space>', 'Space')
-  	.option('-e, --ethereum [ethereum]', 'Ethereum node endpoint', null, 'http://localhost:8545')
+    .argument('<space>', 'Space name')
   	.action(async function (args, options, logger) {
 
         try {
@@ -156,9 +169,9 @@ program
 // REVISION [LOCAL]
 
 program
-    .command('revision create')
+    .command('revision add')
     .description('Create a local revision')
-    .argument('<space>', 'Space')
+    .argument('<space>', 'Space name')
     .argument('<file>', 'File')
     .option('-p, --parent [parent]', 'Parent revision', program.REPEATABLE, null, false)
     .option('-a, --attributes [keyValue]', 'Metadata attributes ', program.REPEATABLE, null, false) // should be REPEATABLE + regex ('/^[a-z]{3,20}=.+/i') validator
@@ -180,19 +193,50 @@ program
             attributes.title = attributes.title || path.basename(args.file);
 			attributes.mimetype = attributes.mimetype || mime.getType(fileExtension(path.basename(args.file)));
 
+			// Store the revision
             let res = await kauri.createRevision(args.space, new Buffer(data), attributes, options.parent);
+
+            // Index the revision in the local DB
+            db.addRevision(args.space, res)
 
             logger.info('Revision ' + res + ' created');
 
         } catch(err) {
-            logger.error('Error adding file ' + args.file + ' >>> ' + err);
+            logger.error('Error creating revision ' + args.file + ' >>> ' + err);
+        }
+    });
+
+
+program
+    .command('revision remove')
+    .description('Remove a revision from local')
+    .argument('<space>', 'Space name')
+    .argument('<revision>', 'Revision hash')
+	.action(async function (args, options, logger) {
+
+        try {
+
+        	if(!config.exists()) {
+        		throw "Please configure a registry by using the command 'kauri init'";
+        	}
+
+            let kauri = await Kauri.init(config.read());
+
+            // Remove the revision in the local DB
+            db.removeRevision(args.space, args.revision);
+
+
+            logger.info('Revision ' + args.revision + ' deleted');
+
+        } catch(err) {
+            logger.error('Error removing revision ' + args.revision + ' >>> ' + err);
         }
     });
 
  program
     .command('revision view')
     .description('Get revision')
-    .argument('<space>', 'Space')
+    .argument('<space>', 'Space name')
     .argument('<revision>', 'Revision hash')
     .action(async function (args, options, logger) {
 
@@ -261,24 +305,29 @@ program
         }
   	});
 
+
+
+////////////////////////////////////////////////////////////////////////////
+// RUN
 program.parse(process.argv);
 
+////////////////////////////////////////////////////////////////////////////
+// UTILS
 function parseKeyValue(keyValues) {
 	if(!keyValues) return;
 
 	var result = {};
 
-	if(keyValues instanceof Array) {
+	if(Array.isArray(keyValues)) {
 		keyValues.forEach(function(x){
 		    var keyVal = splitKeyValue(x);
 		    result[keyVal.key] = keyVal.value;
 		});
 
-	} else if (keyValues instanceof String) {
+	} else if (typeof keyValues == "string") {
 		var keyVal = splitKeyValue(keyValues);
 		result[keyVal.key] = keyVal.value;
 	}
-
 
 	return result;
 }

@@ -29,8 +29,8 @@
     };
 
     Registry.prototype.pushRevision = async function(spaceId, revisionHash, parentRevisionHash) {
-         var self = this;
-
+        var self = this;
+        
         return new Promise( (resolve, reject) => {
           this.instance.pushRevision(spaceId, revisionHash, parentRevisionHash || '', {'from': this.account, 'gas': 3000000}).then(async function(tx) {
                 resolve(await self.getRevision(spaceId, revisionHash, self.instance));

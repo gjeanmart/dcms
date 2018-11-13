@@ -9,26 +9,49 @@
     let DB = { };
 
     DB.addRevision = function(space, hash) {
-        let db = Config.read();
-        (db['local'][space] || []).push(hash);
-        Config.write(db);
+        let db = DB.read();
+        if(!db.local[space]) {
+            db.local[space] = [];
+        }
+        if(!db.local[space].includes(hash)) {
+            db.local[space].push(hash);
+        }
+        DB.write(db);
     };
 
     DB.removeRevision = function(space, hash) {
-        let db = Config.read();
-        var index = (db['local'][space] || []).indexOf('seven');
-        if (index > -1) {
-           (db['local'][space] || []).splice(index, 1);
+        let db = DB.read();
+
+       if(!db.local[space]) {
+            db.local[space] = [];
         }
-        Config.write(db);
+
+        var index = db.local[space].indexOf(hash);
+        if (index > -1) {
+           db.local[space].splice(index, 1);
+        }
+        DB.write(db);
+    };
+
+    DB.getRevisions = function(space, hash) {
+        let db = DB.read();
+
+       if(!db.local[space]) {
+            return [];
+        }
+
+        return db.local[space];
     };
 
     DB.write = function(db) {
-        let data = JSON.stringify(conf);  
+        let data = JSON.stringify(db);  
         fs.writeFileSync(configFile, data);
     };
 
     DB.read = function() {
+        if (!fs.existsSync(configFile)) {
+            return {"local": {}};
+        }
         let data = fs.readFileSync(configFile);
         return JSON.parse(data);
     };

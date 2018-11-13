@@ -63,20 +63,20 @@
 
        	// Revision
         let revision = {
-        	'@type': 'file',
-        	'parent': parent,
-        	'content': { "/": contentHash },
-        	'metadata': attributes
+        	"@type": "file",
+        	"parent": (parent) ? { "/": parent } : null,
+        	"content": { "/": contentHash },
+        	"metadata": attributes
         };
-
         return await this.ipfs.storeRevision(revision);
 	};
 
     Kauri.prototype.pushRevision = async function(spaceId, revisionHash) { 
-
         let revision = await this.getRevision(spaceId, revisionHash);
 
-        return await this.registry.pushRevision(spaceId, revisionHash, revision.parent);
+        let parent = this.ipfs.bufferToCID(revision.parent['/']) || null
+
+        return await this.registry.pushRevision(spaceId, revisionHash, parent);
     };
 
     Kauri.prototype.getRevision = async function(spaceId, revisionHash) {

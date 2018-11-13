@@ -36,6 +36,11 @@
         return await this.ipfs.dag.get(revisionHash, '/');
     };
 
+    IPFS.prototype.bufferToCID = function(data) {
+        var cid = new CID(data);
+        return cid.toBaseEncodedString();
+    };
+
     /***********************************
      * UTILS
      ***********************************/
