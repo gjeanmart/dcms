@@ -3,7 +3,6 @@
 
 	const   ipfsAPI = require('ipfs-api'),
             CID     = require('cids'),
-            fs      = require("fs"),
             URL     = require('url-parse');
 
     function IPFS(url) {
@@ -27,7 +26,6 @@
         const cid = await this.ipfs.dag.put(revision, { format: 'dag-cbor', hashAlg: 'sha2-256' });
 
         return cid.toBaseEncodedString();
-
     };
 
     IPFS.prototype.getRevision = async function(revisionHash) {

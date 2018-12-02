@@ -57,7 +57,9 @@
     };
 
     DB.delete = function() {
-        fs.unlinkSync(configFile);
+        if (fs.existsSync(configFile)) {
+            fs.unlinkSync(configFile);
+        }
     };
 
     DB.exists = function() {

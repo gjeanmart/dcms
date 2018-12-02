@@ -42,10 +42,10 @@ contract ContentSpaceRegistry {
     // Events      
     //
     event SpaceCreated(bytes32 _id, address _owner);
-    event RevisionPending(bytes32 _id, string _hash, string _parent_hash, address _author);
-    event RevisionPublished(bytes32 _id, string _hash, string _parent_hash, address _author);
-    event RevisionApproved(bytes32 _id, string _hash, string _parent_hash, address _by);
-    event RevisionRejected(bytes32 _id, string _hash, string _parent_hash, address _by);
+    event RevisionPending(bytes32 _id, string _hash, string _parent_hash, address _author, uint _timestamp);
+    event RevisionPublished(bytes32 _id, string _hash, string _parent_hash, address _author, uint _timestamp);
+    event RevisionApproved(bytes32 _id, string _hash, string _parent_hash, address _author, address _by, uint _timestamp);
+    event RevisionRejected(bytes32 _id, string _hash, string _parent_hash, address _author, address _by, uint _timestamp);
     ////////////////////////////////////////////////////
 
 
@@ -110,15 +110,12 @@ contract ContentSpaceRegistry {
 		// Increase total revision
 		spaces[_id].total++;
 
-		// Link the last reivision hash to the space
-		spaces[_id].lastRevision = _hash;
-
-
 		// Events
 		if(spaces[_id].revisions[_hash].state == State.PUBLISHED) {
-			emit RevisionPublished(_id, _hash, _parent_hash, msg.sender);
+			spaces[_id].lastRevision = _hash;
+			emit RevisionPublished(_id, _hash, _parent_hash, msg.sender, revision.timestamp);
 		} else {
-			emit RevisionPending(_id, _hash, _parent_hash, msg.sender);
+			emit RevisionPending(_id, _hash, _parent_hash, msg.sender, revision.timestamp);
 		}
 	}
 
@@ -135,11 +132,11 @@ contract ContentSpaceRegistry {
 
 		// Storage
 		spaces[_id].revisions[_hash].state = State.PUBLISHED;
-
+		spaces[_id].lastRevision = _hash;
 
 		// Events
-		emit RevisionApproved(_id, _hash, spaces[_id].revisions[_hash].parent, msg.sender);
-		emit RevisionPublished(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author);
+		emit RevisionApproved(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, msg.sender, spaces[_id].revisions[_hash].timestamp);
+		emit RevisionPublished(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, spaces[_id].revisions[_hash].timestamp);
 	}	
 
 	function rejectRevision(bytes32 _id, string _hash) public {
@@ -158,7 +155,7 @@ contract ContentSpaceRegistry {
 
 
 		// Events
-		emit RevisionRejected(_id, _hash, spaces[_id].revisions[_hash].parent, msg.sender);
+		emit RevisionRejected(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, msg.sender, spaces[_id].revisions[_hash].timestamp);
 	}	
     ////////////////////////////////////////////////////
 
@@ -194,11 +191,11 @@ contract ContentSpaceRegistry {
     	return spaces[_id].revisions[_hash].state == State.REJECTED;
     }
 
-    function getRevision(bytes32 _id, string _hash) public view returns  (string, string, address, State) {
+    function getRevision(bytes32 _id, string _hash) public view returns  (string, string, address, State, uint) {
 		require(spaces[_id].exists, "Space doesn't exist");
 		require(spaces[_id].revisions[_hash].exists, "Revisions doesn't exist on this space");
 
-    	return (spaces[_id].revisions[_hash].hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, spaces[_id].revisions[_hash].state);
+    	return (spaces[_id].revisions[_hash].hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, spaces[_id].revisions[_hash].state, spaces[_id].revisions[_hash].timestamp);
     }
 
 	////////////////////////////////////////////////////

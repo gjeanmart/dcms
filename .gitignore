@@ -66,3 +66,5 @@ github_deploy_key.pub
 .elasticsearch
 .zookeeper
 .mongodb
+
+.env

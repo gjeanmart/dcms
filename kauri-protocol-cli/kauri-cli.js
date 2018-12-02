@@ -2,14 +2,14 @@
 
 'use strict';
 
-const program 	= require('caporal');
-const Kauri 	= require('../index');
-const config 	= require('../config.js');
-const db 		= require('../db.js');
-const fs 		= require("fs");
-const path 		= require("path");
-const mime 		= require('mime');
-const fileExtension = require('file-extension');
+const program 	       = require('caporal');
+const Kauri 	       = require('kauri-protocol');
+const config 	       = require('./config.js');
+const db 		       = require('./db.js');
+const fs 		       = require("fs");
+const path 		       = require("path");
+const mime 		       = require('mime');
+const fileExtension    = require('file-extension');
 
 program
     .version('0.0.1')
@@ -22,28 +22,28 @@ program
     .option('-i, --ipfs <ipfs>', 'IPFS node endpoint', null, 'http://localhost:5001', false)
     .option('-r, --registry <registry>', 'Registry ("new" or contract address) to connect to', null, 'new', false)
     .option('-m, --mnemonic <mnemonic>', 'Mnemonic', null, null, false)
-    .option('-i, --index <index>', 'Mnemonic', program.INT, null, false)
+    .option('-x, --index <index>', 'Mnemonic', program.INT, null, false)
   	.action(async function (args, options, logger) {
 
         try {
-        	let conf = {
-        		'connections': {
-        			'ethereum': options.ethereum, 
-        			'ipfs': options.ipfs
-        		}, 
-        		'registry': options.registry,
-        		'mnemonic': options.mnemonic,
-        		'index': options.index
-        	};
 
-            let res = await Kauri.init(conf);
+            const conf = {
+                'connections': {
+                    'ethereum': options.ethereum, 
+                    'ipfs': options.ipfs
+                }, 
+                'registry': options.registry, 
+                'mnemonic': options.mnemonic, 
+                'index': options.index
+            };
 
+            let res = await Kauri.init(config.load(conf));
             conf.registry = res.registry.instance.address;
 
             config.write(conf);
             db.delete();
 
-            logger.info('Registry deployed to ' + conf.registry + '');
+            logger.info('Connected to registry [address: ' + conf.registry + ']');
 
         } catch(err) {
             logger.error('ERROR: init(args: '+JSON.stringify(args)+', options: '+JSON.stringify(options)+') >>> ' + err);
@@ -63,11 +63,7 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
+            let kauri = await Kauri.init(config.load());
             let res = await kauri.createSpace(args.space, options.owner);
 
             logger.info('Content ' + res.id + ' created (owner: ' + res.owner + ')');
@@ -86,19 +82,13 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
+            let kauri = await Kauri.init(config.load());
 
             if(args.revision == 'all') {
             	db.getRevisions(args.space).map(async function(r) { 
             		console.log("r="+r)
             		await kauri.pushRevision(args.space, r); 
-            		console.log("remove")
             		db.removeRevision(args.space, r);
-            		console.log("OK")
             	});
             } else {
             	let res = await kauri.pushRevision(args.space, args.revision);
@@ -119,11 +109,7 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
+            let kauri = await Kauri.init(config.load());
             let res = await kauri.getAllSpaces();
 
             logger.info(res.map(r => { return {
@@ -145,18 +131,15 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
-            let res = await kauri.getSpace(args.space);
+            let kauri = await Kauri.init(config.load());
+            let space = await kauri.getSpace(args.space);
+            let revisions = await kauri.getSpaceRevisions(args.space);
 
             logger.info({
             	'space': args.space,
-            	'owner': res.owner,
-            	'lastRevision': res.lastRevision,
-            	'revisions': res.revisions
+            	'owner': space.owner,
+            	'lastRevision': space.lastRevision,
+            	'revisions': revisions
             });
 
         } catch(err) {
@@ -179,11 +162,7 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
+            let kauri = await Kauri.init(config.load());
 
             // Content
             let data = fs.readFileSync(args.file);
@@ -192,7 +171,7 @@ program
             let attributes = parseKeyValue(options.attributes) || {};
             attributes.title = attributes.title || path.basename(args.file);
 			attributes.mimetype = attributes.mimetype || mime.getType(fileExtension(path.basename(args.file)));
-
+ 
 			// Store the revision
             let res = await kauri.createRevision(args.space, new Buffer(data), attributes, options.parent);
 
@@ -216,11 +195,7 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
+            let kauri = await Kauri.init(config.load());
 
             // Remove the revision in the local DB
             db.removeRevision(args.space, args.revision);
@@ -233,7 +208,7 @@ program
         }
     });
 
- program
+program
     .command('revision view')
     .description('Get revision')
     .argument('<space>', 'Space name')
@@ -242,11 +217,7 @@ program
 
         try {
 
-        	if(!config.exists()) {
-        		throw "Please configure a registry by using the command 'kauri init'";
-        	}
-
-            let kauri = await Kauri.init(config.read());
+            let kauri = await Kauri.init(config.load());
             let res = await kauri.getRevision(args.space, args.revision);
 
             logger.info({

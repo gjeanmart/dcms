@@ -1,9 +1,7 @@
 'use strict';
 (async () => {
 
-	const   fs                  = require('fs'),
-            solc                = require('solc'),
-	        truffleContract     = require('truffle-contract');
+	const   truffleContract = require('truffle-contract');
 
 
     let Web3Utils = {
@@ -17,9 +15,9 @@
             });
         },
 
-        'fetchContract': async (source, web3, contractAddress) => {
+        'fetchContract': async (artifact, web3, contractAddress) => {
             return new Promise( (resolve, reject) => {
-                let contract = truffleContract(compileContract(source.path, source.name));
+                let contract = truffleContract(artifact);
                 contract.setProvider(web3.currentProvider);
 
                 contract.at(contractAddress).then(function(instance) {
@@ -28,9 +26,9 @@
             });
         },
 
-        'deployContract': async (source, web3, fromAddress) => {
+        'deployContract': async (artifact, web3, fromAddress) => {
             return new Promise( (resolve, reject) => {
-                let contract = truffleContract(compileContract(source.path, source.name));
+                let contract = truffleContract(artifact);
                 contract.setProvider(web3.currentProvider);
                 contract.new({'from': fromAddress, 'gas': 6500000}).then(function(instance) {
                     resolve(instance);
@@ -47,23 +45,6 @@
             });
         },
 
-    };
-
-
-    /***********************************
-     * UTILS
-     ***********************************/
-
-    let compileContract = function(path, name) {
-        let source = fs.readFileSync(path, 'utf8');
-        let compiledContract = solc.compile(source, 1);
-        let abi = compiledContract.contracts[':'+name].interface;
-        let bytecode = compiledContract.contracts[':'+name].bytecode;
-
-        return {
-            'abi': abi,
-            'unlinked_binary': bytecode
-        };
     };
     
     module.exports = Web3Utils;

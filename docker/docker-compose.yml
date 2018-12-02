@@ -20,7 +20,23 @@ services:
       - .docker/.ethereum_log:/data/parity-logs
     environment:
       TRANSFER_AMOUNT: 10
-      TRANSFER_ACCOUNTS: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57,0xf17f52151EbEF6C7334FAD080c5704D77216b732,0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef
+      TRANSFER_ACCOUNTS: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57,0xF0f15Cedc719B5A55470877B0710d5c7816916b1
+    networks:
+      - default
+
+  truffle:
+    image: gjeanmart/truffle-docker
+    volumes:
+      - ../kauri-protocol-contracts:/project
+    ports:
+      - "8888:8888"
+    depends_on:
+      - eth-node
+    environment:
+      COMMAND: compile
+      NETWORK: docker
+      API_PORT: 8888
+      API_HOST: 0.0.0.0
     networks:
       - default
 

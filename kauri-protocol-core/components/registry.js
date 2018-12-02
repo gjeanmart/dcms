@@ -41,6 +41,32 @@
         });
     };
 
+    Registry.prototype.approveRevision = async function(spaceId, revisionHash) {
+        var self = this;
+        
+        return new Promise( (resolve, reject) => {
+          this.instance.approveRevision(spaceId, revisionHash, {'from': this.account, 'gas': 3000000}).then(async function(tx) {
+                resolve(await self.getRevision(spaceId, revisionHash, self.instance));
+
+            }).catch(function (error) {
+                reject(error);
+            });
+        });
+    };
+
+    Registry.prototype.rejectRevision = async function(spaceId, revisionHash) {
+        var self = this;
+        
+        return new Promise( (resolve, reject) => {
+          this.instance.rejectRevision(spaceId, revisionHash, {'from': this.account, 'gas': 3000000}).then(async function(tx) {
+                resolve(await self.getRevision(spaceId, revisionHash, self.instance));
+
+            }).catch(function (error) {
+                reject(error);
+            });
+        });
+    };
+
     /***********************************
      * VIEWS
      ***********************************/
@@ -72,7 +98,8 @@
                     'hash': result[0],
                     'parent': result[1] || '',
                     'author': result[2],
-                    'state': convertState(result[3].toNumber())
+                    'state': convertState(result[3].toNumber()),
+                    'timestamp': result[4]
                 });
 
             }).catch(function (error) {
@@ -123,7 +150,8 @@
                             'hash': logs[i].args._hash,
                             'parent': logs[i].args._parent_hash || '',
                             'author': logs[i].args._author,
-                            'state': convertEventToState(logs[i].event)
+                            'state': convertEventToState(logs[i].event),
+                            'timestamp': logs[i].args._timestamp.toNumber()
                         };
                     }
                 }

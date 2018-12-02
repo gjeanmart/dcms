@@ -1,0 +1,19 @@
+version: '3'
+services:
+          
+  truffle:
+    image: gjeanmart/truffle-docker
+    volumes:
+      - ../kauri-protocol-contracts:/project
+    ports:
+      - "8888:8888"
+    environment:
+      COMMAND: migrate
+      NETWORK: poa_sokol
+      API_PORT: 8888
+      API_HOST: 0.0.0.0
+    networks:
+      - default
+
+networks:
+  default:
