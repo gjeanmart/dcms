@@ -2,7 +2,7 @@
 (async () => {
 
     const fs               = require('fs');
-	const homedir          = require('os').homedir();
+    const homedir          = require('os').homedir();
     const filename         = '.kauri.config.json';
     const configFile       = homedir + '/' + filename;
     const path             = require("path");

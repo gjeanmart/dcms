@@ -1,13 +1,13 @@
 "use strict";
 (async () => {
 
-	const   ipfsAPI = require('ipfs-api'),
+    const   ipfsAPI = require('ipfs-api'),
             CID     = require('cids'),
             URL     = require('url-parse');
 
     function IPFS(url) {
         var urlParsed = new URL(url);
-    	this.ipfs = ipfsAPI(urlParsed.hostname, urlParsed.port, {protocol: urlParsed.protocol.slice(0, -1)});
+        this.ipfs = ipfsAPI(urlParsed.hostname, urlParsed.port, {protocol: urlParsed.protocol.slice(0, -1)});
     }
 
     IPFS.prototype.storeContent = async function(content) {

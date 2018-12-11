@@ -24,11 +24,11 @@
 
         return new Promise( (resolve, reject) => {
             this.instance.createSpace(spaceId, owner || this.account, {'from': this.account, 'gas': 3000000}).then(async function(tx) {
-	  			resolve(await self.getSpace(spaceId));
+                resolve(await self.getSpace(spaceId));
 
-	    	}).catch(function (error) {
-	    		reject(error);
-			});
+            }).catch(function (error) {
+                reject(error);
+            });
         });
     };
 

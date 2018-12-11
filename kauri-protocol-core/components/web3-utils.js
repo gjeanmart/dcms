@@ -1,7 +1,7 @@
 'use strict';
 (async () => {
 
-	const   truffleContract = require('truffle-contract');
+    const   truffleContract = require('truffle-contract');
 
 
     let Web3Utils = {

@@ -21,13 +21,13 @@
 
         return new Promise(async (resolve, reject) => {
             this.instance.getContentSpace.call(spaceId).then(function(result) {
-	  			resolve({
-	  				'id': self.web3.toAscii(result[0]).replace(/\u0000/g, ''),
-	  				'owner': result[1],
+                resolve({
+                    'id': self.web3.toAscii(result[0]).replace(/\u0000/g, ''),
+                    'owner': result[1],
                     'lastRevision': result[2]
-	  			});
+                });
 
-	    	}).catch(function (error) {
+            }).catch(function (error) {
                 reject(error);
             });;
 

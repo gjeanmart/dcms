@@ -1,27 +1,27 @@
 'use strict';
 (async () => {
 
-	const 	Web3Utils   	= require('./components/web3-utils.js'),
-		  	IPFS  			= require('./components/ipfs.js'),
-		  	Registry  		= require('./components/registry.js'),
+    const   Web3Utils       = require('./components/web3-utils.js'),
+            IPFS            = require('./components/ipfs.js'),
+            Registry        = require('./components/registry.js'),
             RegistryOverMetaTx = require('./components/registry-over-metatx.js');
 
     function Kauri(ipfs, registry, web3, account) {
-    	this.ipfs = ipfs;
-    	this.registry = registry;
-    	this.web3 = web3;
-    	this.account = account;
+        this.ipfs = ipfs;
+        this.registry = registry;
+        this.web3 = web3;
+        this.account = account;
     }
 
     Kauri.init = async function(conf) {
-    	let account = await Web3Utils.getCurrentAccount(conf.web3);
+        let account = await Web3Utils.getCurrentAccount(conf.web3);
 
-    	let instance;
-    	if(conf.registryAddress == "new") {
-    		instance = await Web3Utils.deployContract(conf.registryArtifact, conf.web3, account);
-    	} else {
-    		instance = await Web3Utils.fetchContract(conf.registryArtifact, conf.web3, conf.registryAddress);
-    	} 
+        let instance;
+        if(conf.registryAddress == "new") {
+            instance = await Web3Utils.deployContract(conf.registryArtifact, conf.web3, account);
+        } else {
+            instance = await Web3Utils.fetchContract(conf.registryArtifact, conf.web3, conf.registryAddress);
+        } 
 
         let registry;
         if(conf.enableMetaTx) {
@@ -41,8 +41,8 @@
 
     Kauri.prototype.createRevision = async function(spaceId, data, attributes, parent) {
  
-    	// Store content on IPFS
-       	let contentHash = await this.ipfs.storeContent(data);
+        // Store content on IPFS
+        let contentHash = await this.ipfs.storeContent(data);
 
         // Parent
         let revisions = await this.registry.getAllRevisions(spaceId); 
@@ -52,16 +52,16 @@
             // TODO check if parent is CID and exists
         }
 
-       	// Revision
+        // Revision
         // TODO accept other type (like 'tree')
         let revision = {
-        	"@type": "file",
-        	"parent": (parent) ? { "/": parent } : null,
-        	"content": { "/": contentHash },
-        	"metadata": attributes
+            "@type": "file",
+            "parent": (parent) ? { "/": parent } : null,
+            "content": { "/": contentHash },
+            "metadata": attributes
         };
         return await this.ipfs.storeRevision(revision);
-	};
+    };
 
     Kauri.prototype.pushRevision = async function(spaceId, revisionHash) { 
         let revision = await this.getRevision(spaceId, revisionHash);
@@ -86,20 +86,20 @@
         revision.value.parent = (revision.value.parent != null) ? this.ipfs.bufferToCID(revision.value.parent['/']) : null; 
 
         if(revision.value["@type"] === "file") {
-        	revision.value.content = await this.ipfs.getContent(revisionHash, '/content');
+            revision.value.content = await this.ipfs.getContent(revisionHash, '/content');
         } else if(revision.value["@type"] === "tree") {
             //TODO
         }
         
         try {
-        	let publishedRevision = await this.registry.getRevision(spaceId, revisionHash);
-        	revision.value.state = publishedRevision.state;
-        	revision.value.author = publishedRevision.author;
+            let publishedRevision = await this.registry.getRevision(spaceId, revisionHash);
+            revision.value.state = publishedRevision.state;
+            revision.value.author = publishedRevision.author;
             revision.value.timestamp = publishedRevision.timestamp;
 
         } catch(err) {
-        	revision.value.state = "UNPUBLISHED";
-        	revision.value.author = null;
+            revision.value.state = "UNPUBLISHED";
+            revision.value.author = null;
             revision.value.timestamp = null;
         }
         
