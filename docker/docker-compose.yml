@@ -2,14 +2,16 @@ version: '3'
 services:
           
   ipfs:
-    image: jbenet/go-ipfs
+    image: ipfs/go-ipfs:latest
     ports:
       - "4001:4001"
       - "5001:5001"
       - "8880:8080"
     volumes:
-      - .docker/ipfs-data:/data/ipfs/
+      - .docker/.ipfs-data:/data/ipfs/
       - .docker/.ipfs-staging:/export
+    networks:
+      - default
 
   eth-node:
     image: kauriorg/parity-docker
@@ -33,10 +35,63 @@ services:
     depends_on:
       - eth-node
     environment:
-      COMMAND: compile
+      COMMAND: migrate
       NETWORK: docker
       API_PORT: 8888
       API_HOST: 0.0.0.0
+    networks:
+      - default
+
+  frontend:
+#    # run instead: $ docker build -t gjeanmart/kauri-protocol-frontend -f kauri-protocol-frontend/Dockerfile-kauri-protocol-core .
+#    #build: ../kauri-protocol-frontend/
+    image: gjeanmart/kauri-protocol-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ipfs
+      - truffle
+    environment:
+      REACT_APP_TRUFFLE_ENDPOINT: http://localhost:8888/api
+      REACT_APP_IPFS_ENDPOINT: http://localhost:5001
+      REACT_APP_REGISTRY_CONTRACT_ADDRESS: "see command: > "
+      REACT_APP_ENABLE_METATX: "true"
+      REACT_APP_METATX_ENDPOINT: http://localhost:8080
+    command: >
+      /bin/sh -c '
+        echo Waiting for contract to be deployed...;
+        while ! nc -z truffle 8888;
+        do
+          sleep 1;
+        done;
+        result=$$(curl http://truffle:8888/api/ContentSpaceRegistry | jq -r .address)
+        export REACT_APP_REGISTRY_CONTRACT_ADDRESS=$$result
+        echo REACT_APP_REGISTRY_CONTRACT_ADDRESS=$$REACT_APP_REGISTRY_CONTRACT_ADDRESS
+        npm start
+      '
+    networks:
+      - default
+
+  backend:
+    build: ../kauri-protocol-metatx/
+    image: gjeanmart/kauri-protocol-metatx
+    ports:
+      - "8080:8080"
+    environment:
+      RPC_URL: http://eth-node:8545
+      TRUFFLE_ENDPOINT_HOST: truffle
+    depends_on:
+      - truffle
+    command: >
+      /bin/sh -c '
+        echo Waiting for contract to be deployed...;
+        while ! nc -z truffle 8888;
+        do
+          sleep 1;
+        done;
+        echo "Contracts deployed"
+        npm start
+      '
     networks:
       - default
 

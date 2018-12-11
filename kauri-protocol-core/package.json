@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.18.0",
     "cids": "^0.5.5",
     "ipfs-api": "^24.0.2",
     "truffle-contract": "^3.0.1",

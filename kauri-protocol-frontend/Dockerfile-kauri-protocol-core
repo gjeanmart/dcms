@@ -1,0 +1,42 @@
+FROM ubuntu:18.04
+MAINTAINER Gregoire Jeanmart <gregoire.jeanmart@gmail.com>
+
+RUN apt-get update
+RUN apt-get -qq update
+RUN apt-get install -y npm git netcat curl jq
+
+####################################################################################################################
+# Env
+
+
+####################################################################################################################
+# WORKING DIRECTORY
+RUN mkdir /usr/src/app
+WORKDIR /usr/src/app
+
+####################################################################################################################
+# add `/usr/src/app/node_modules/.bin` to $PATH
+ENV PATH /usr/src/app/node_modules/.bin:$PATH
+
+##############
+# TODO removed once kauri-potocol-core published on npm
+ADD ./kauri-protocol-core /usr/src/kauri-protocol-core
+
+####################################################################################################################
+# DEPENDANCIES
+COPY ./kauri-protocol-frontend/package*.json ./
+RUN npm install --silent
+
+
+####################################################################################################################
+# COPY SOURCE
+COPY ./kauri-protocol-frontend/src/ ./src/
+COPY ./kauri-protocol-frontend/public/ ./public/
+COPY ./kauri-protocol-frontend/.env ./.env
+
+
+
+####################################################################################################################
+# RUN
+EXPOSE 3000
+CMD [ "npm", "start" ]

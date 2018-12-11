@@ -14,5 +14,8 @@
   "devDependencies": {
     "dotenv": "^6.1.0",
     "truffle-hdwallet-provider": "0.0.6"
+  },
+  "dependencies": {
+    "ethereumjs-util": "^6.0.0"
   }
 }

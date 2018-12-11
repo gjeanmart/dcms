@@ -3,7 +3,8 @@
 
 	const 	Web3Utils   	= require('./components/web3-utils.js'),
 		  	IPFS  			= require('./components/ipfs.js'),
-		  	Registry  		= require('./components/registry.js');
+		  	Registry  		= require('./components/registry.js'),
+            RegistryOverMetaTx = require('./components/registry-over-metatx.js');
 
     function Kauri(ipfs, registry, web3, account) {
     	this.ipfs = ipfs;
@@ -22,11 +23,16 @@
     		instance = await Web3Utils.fetchContract(conf.registryArtifact, conf.web3, conf.registryAddress);
     	} 
 
-        return new Kauri(
-            new IPFS(conf.connections.ipfs), 
-            new Registry(instance, conf.web3, account), 
-            conf.web3,
-            account);
+        let registry;
+        if(conf.enableMetaTx) {
+            registry = new RegistryOverMetaTx(instance, conf.web3, account);
+        } else {
+            registry = new Registry(instance, conf.web3, account);
+        }
+
+        let ipfs = new IPFS(conf.connections.ipfs);
+
+        return new Kauri(ipfs, registry, conf.web3, account);
     };
 
     Kauri.prototype.createSpace = async function(spaceId, owner) {
@@ -89,11 +95,11 @@
         	let publishedRevision = await this.registry.getRevision(spaceId, revisionHash);
         	revision.value.state = publishedRevision.state;
         	revision.value.author = publishedRevision.author;
-            revision.value.timestamp = publishedRevision.timestamp.toNumber();
+            revision.value.timestamp = publishedRevision.timestamp;
 
         } catch(err) {
         	revision.value.state = "UNPUBLISHED";
-        	revision.value.author = "";
+        	revision.value.author = null;
             revision.value.timestamp = null;
         }
         

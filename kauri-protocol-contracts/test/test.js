@@ -3,6 +3,7 @@
 
   let ContentSpaceRegistry = artifacts.require('ContentSpaceRegistry.sol');
   let catchRevert = require('./exceptions.js').catchRevert;
+  let EthUtil = require('ethereumjs-util');
   let instance;
 
   contract('ContentSpaceRegistry', function(accounts) {
@@ -274,6 +275,28 @@
         await catchRevert(pushRevision(spaceId, revisionHash2, null, {'from': author}));
     });
 
+
+    /*******************
+     * META TRANSACTION
+     ********************/
+    it('should create a space with metatransaction', async () => {
+        const etherless = {
+          "privatekey": "43f2ee33c522046e80b67e96ceb84a05b60b9434b0ee2e3ae4b1311b9f5dcc46",
+          "account": "0xbd2e9caf03b81e96ee27ad354c579e1310415f39"
+        }
+
+        const spaceId = 'HelloWorld Meta1';
+        const owner = etherless.account;
+        const relayer = accounts[1];
+
+        const nonce = await getNonce(owner);
+        const hash = await metaCreateSpaceHash(spaceId, owner, nonce);
+        const signature = await sign(etherless.privatekey, hash);
+
+        const space = await metaCreateSpace(spaceId, owner, nonce, signature, {'from': relayer});
+        assert.equal(space.id, spaceId);
+        assert.equal(space.owner, owner);
+    })
   });
 
 
@@ -363,6 +386,50 @@
       });
     });
   };
+
+
+  async function metaCreateSpace(spaceId, owner, nonce, signature, args) {
+
+    return new Promise( (resolve, reject) => {
+      instance.metaCreateSpace(spaceId, owner, signature, nonce, args).then(async function(tx) {
+        resolve(await getSpace(spaceId));
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+  };
+
+  async function metaCreateSpaceHash(spaceId, owner, nonce) {
+
+    return new Promise( (resolve, reject) => {
+      instance.metaCreateSpaceHash(spaceId, owner, nonce).then(async function(res) {
+        resolve(res);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+  };
+
+  async function getNonce(address) {
+
+    return new Promise( (resolve, reject) => {
+      instance.getNonce(address).then(async function(res) {
+        resolve(res);
+      }).catch(function (error) {
+        reject(error);
+      });
+    });
+  };
+
+  async function sign(pk, message) {
+
+    var msgHash = EthUtil.hashPersonalMessage(new Buffer(message));
+    var signature = EthUtil.ecsign(msgHash, new Buffer(pk, 'hex')); 
+    var signatureRPC = EthUtil.toRpcSig(signature.v, signature.r, signature.s)
+
+    return signatureRPC;
+  };
+
 
   function convertState(id) {
 

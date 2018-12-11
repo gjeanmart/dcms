@@ -24,9 +24,10 @@ class App extends Component {
           'ethereum': "no required", 
           'ipfs': process.env.REACT_APP_IPFS_ENDPOINT
       }, 
-      'registryArtifact': resp.data[0],
+      'registryArtifact': resp.data,
       'registryAddress': process.env.REACT_APP_REGISTRY_CONTRACT_ADDRESS,
-      'web3': window.web3
+      'web3': window.web3,
+      'enableMetaTx': process.env.REACT_APP_ENABLE_METATX
     });
 
     this.setState({kauri});

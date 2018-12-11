@@ -64,6 +64,7 @@ program
         try {
 
             let kauri = await Kauri.init(config.load());
+            
             let res = await kauri.createSpace(args.space, options.owner);
 
             logger.info('Content ' + res.id + ' created (owner: ' + res.owner + ')');
