@@ -4,15 +4,14 @@
   let ContentSpaceRegistry = artifacts.require('ContentSpaceRegistry.sol');
   let catchRevert = require('./exceptions.js').catchRevert;
   let EthUtil = require('ethereumjs-util');
-  let instance;
+  let registryInstance;
 
   contract('ContentSpaceRegistry', function(accounts) {
 
-    before(function() {
-        return ContentSpaceRegistry.deployed().then(function(inst) {
-            instance = inst;
-        });
-    });
+    beforeEach(async () => {
+        registryInstance = await ContentSpaceRegistry.new()
+    })
+
 
     /*******************
      * HAPPY PATH
@@ -201,7 +200,7 @@
         assert.equal(revision.hash, revisionHash);
         assert.equal(revision.author, author);
         assert.equal(revision.state, 'PENDING');
-        
+
         await catchRevert(approveRevision(spaceId, revisionHash, {'from': author}));
     });
 
@@ -219,7 +218,7 @@
         assert.equal(revision.hash, revisionHash);
         assert.equal(revision.author, author);
         assert.equal(revision.state, 'PENDING');
-        
+
         await catchRevert(approveRevision(spaceId, revisionHash, {'from': author}));
     });
 
@@ -232,7 +231,7 @@
         const space = await createSpace(spaceId, owner, {'from': owner});
         assert.equal(space.id, spaceId);
         assert.equal(space.owner, owner);
-        
+
         await catchRevert(approveRevision(spaceId, revisionHash, {'from': owner}));
     });
 
@@ -250,7 +249,7 @@
         assert.equal(revision.hash, revisionHash);
         assert.equal(revision.author, author);
         assert.equal(revision.state, 'PUBLISHED');
-        
+
         await catchRevert(approveRevision(spaceId, revisionHash, {'from': author}));
     });
 
@@ -282,7 +281,7 @@
     it('should create a space with metatransaction', async () => {
         const etherless = {
           "privatekey": "43f2ee33c522046e80b67e96ceb84a05b60b9434b0ee2e3ae4b1311b9f5dcc46",
-          "account": "0xbd2e9caf03b81e96ee27ad354c579e1310415f39"
+          "account": "0xBd2e9CaF03B81e96eE27AD354c579E1310415F39"
         }
 
         const spaceId = 'HelloWorld Meta1';
@@ -297,142 +296,75 @@
         assert.equal(space.id, spaceId);
         assert.equal(space.owner, owner);
     })
+
   });
 
 
 
-  async function getInstance() {
-
-    return new Promise( (resolve, reject) => {
-      ContentSpaceRegistry.deployed().then(function(instance) {
-         resolve(instance)
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
-  };
-
   async function createSpace(spaceId, owner, args) {
-
-    return new Promise( (resolve, reject) => {
-      instance.createSpace(spaceId, owner, args).then(async function(tx) {
-        resolve(await getSpace(spaceId));
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    await registryInstance.createSpace(web3.utils.fromAscii(spaceId), owner, args);
+    return await getSpace(spaceId);
   };
 
   async function getSpace(spaceId) {
+    let result = await registryInstance.getContentSpace(web3.utils.fromAscii(spaceId));
 
-    return new Promise(async (resolve, reject) => {
-      instance.getContentSpace.call(spaceId).then(function(result) {
-        resolve({
-          'id': web3.toAscii(result[0]).replace(/\u0000/g, ''),
-          'owner': result[1],
-          'lastRevision': result[2]
-        });
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    return {
+      'id': web3.utils.toAscii(result[0]).replace(/\u0000/g, ''),
+      'owner': result[1],
+      'lastRevision': result[2]
+    };
   };
 
   async function pushRevision(spaceId, revisionHash, parentRevisionHash, args) {
-
-    return new Promise( (resolve, reject) => {
-      instance.pushRevision(spaceId, revisionHash, parentRevisionHash || '', args).then(async function(tx) {
-        resolve(await getRevision(spaceId, revisionHash));
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    await registryInstance.pushRevision(web3.utils.fromAscii(spaceId), revisionHash, parentRevisionHash || '', args);
+    return await getRevision(spaceId, revisionHash);
   };
 
   async function approveRevision(spaceId, revisionHash, args) {
-
-    return new Promise( (resolve, reject) => {
-      instance.approveRevision(spaceId, revisionHash, args).then(async function(tx) {
-        resolve(await getRevision(spaceId, revisionHash));
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    await registryInstance.approveRevision(web3.utils.fromAscii(spaceId), revisionHash, args);
+    return getRevision(spaceId, revisionHash);
   };
 
   async function rejectRevision(spaceId, revisionHash, args) {
-
-    return new Promise( (resolve, reject) => {
-      instance.approveRevision(spaceId, revisionHash, args).then(async function(tx) {
-        resolve(await getRevision(spaceId, revisionHash));
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    await registryInstance.rejectRevision(web3.utils.fromAscii(spaceId), revisionHash, args);
+    return await getRevision(spaceId, revisionHash);
   };
 
   async function getRevision(spaceId, revisionHash) {
+    let result = await registryInstance.getRevision(web3.utils.fromAscii(spaceId), revisionHash);
 
-    return new Promise(async (resolve, reject) => {
-      instance.getRevision.call(spaceId, revisionHash).then(function(result) {
-        resolve({
-          'hash': result[0],
-          'parent': result[1],
-          'author': result[2],
-          'state': convertState(result[3].toNumber())
-        });
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    return {
+      'hash': result[0],
+      'parent': result[1],
+      'author': result[2],
+      'state': convertState(result[3].toNumber())
+    };
   };
 
 
   async function metaCreateSpace(spaceId, owner, nonce, signature, args) {
-
-    return new Promise( (resolve, reject) => {
-      instance.metaCreateSpace(spaceId, owner, signature, nonce, args).then(async function(tx) {
-        resolve(await getSpace(spaceId));
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    await registryInstance.metaCreateSpace(web3.utils.fromAscii(spaceId), owner, signature, nonce, args);
+    return await getSpace(spaceId);
   };
 
   async function metaCreateSpaceHash(spaceId, owner, nonce) {
-
-    return new Promise( (resolve, reject) => {
-      instance.metaCreateSpaceHash(spaceId, owner, nonce).then(async function(res) {
-        resolve(res);
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    return await registryInstance.metaCreateSpaceHash(web3.utils.fromAscii(spaceId), owner, nonce);
   };
 
   async function getNonce(address) {
-
-    return new Promise( (resolve, reject) => {
-      instance.getNonce(address).then(async function(res) {
-        resolve(res);
-      }).catch(function (error) {
-        reject(error);
-      });
-    });
+    return await registryInstance.getNonce(address);
   };
 
   async function sign(pk, message) {
-
     var msgHash = EthUtil.hashPersonalMessage(new Buffer(message));
-    var signature = EthUtil.ecsign(msgHash, new Buffer(pk, 'hex')); 
+    var signature = EthUtil.ecsign(msgHash, new Buffer(pk, 'hex'));
     var signatureRPC = EthUtil.toRpcSig(signature.v, signature.r, signature.s)
 
     return signatureRPC;
   };
 
-
   function convertState(id) {
-
     switch(id) {
       case 0:
           return 'PENDING';
@@ -442,10 +374,7 @@
           return 'PUBLISHED';
       default:
           throw 'Bad id'
-    } 
+    }
   };
 
-
 })();
-
-
