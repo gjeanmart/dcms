@@ -34,7 +34,6 @@
               'nonce': nonce,
               'signature': signature
             });
-            console.log("tx="+resp.data.tx)
             
             setTimeout(function() { 
                 resolve(self.getSpace(spaceId));
@@ -57,7 +56,6 @@
               'nonce': nonce,
               'signature': signature
             });
-            console.log("tx="+resp.data.tx)
             
             setTimeout(function() { 
                 resolve(self.getSpace(spaceId));
@@ -79,7 +77,6 @@
               'nonce': nonce,
               'signature': signature
             });
-            console.log("tx="+resp.data.tx)
             
             setTimeout(function() { 
                 resolve(self.getSpace(spaceId));
@@ -101,7 +98,6 @@
               'nonce': nonce,
               'signature': signature
             });
-            console.log("tx="+resp.data.tx)
             
             setTimeout(function() { 
                 resolve(self.getSpace(spaceId));

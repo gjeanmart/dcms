@@ -16,7 +16,6 @@
         _TRUFFLE_ENDPOINT_PORT: process.env.TRUFFLE_ENDPOINT_PORT || 8888,
         _TRUFFLE_ENDPOINT_PATH: process.env.TRUFFLE_ENDPOINT_PATH || "/api",
         _GAS_PRICE: process.env.GAS_PRICE || 1000000000,
-
         _CONTRACT_NAME: "ContentSpaceRegistry"
     }
 

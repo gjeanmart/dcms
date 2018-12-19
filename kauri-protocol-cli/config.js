@@ -37,7 +37,8 @@
             }, 
             'registryArtifact': JSON.parse(fs.readFileSync(contract, 'utf8')),
             'registryAddress': args.registry,
-            'web3': web3
+            'web3': web3,
+            'enableMetaTx': args.enableMetaTx
         };
     };
 

@@ -34,7 +34,8 @@ program
                 }, 
                 'registry': options.registry, 
                 'mnemonic': options.mnemonic, 
-                'index': options.index
+                'index': options.index,
+                'enableMetaTx': false
             };
 
             let res = await Kauri.init(config.load(conf));

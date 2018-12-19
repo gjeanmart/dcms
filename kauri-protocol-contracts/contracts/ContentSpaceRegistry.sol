@@ -1,26 +1,26 @@
-pragma solidity ^0.4.20;
+pragma solidity ^0.5.0;
 
 contract ContentSpaceRegistry {
 
     ////////////////////////////////////////////////////
-    // ENUM      
+    // ENUM
     //
     enum State { PENDING, REJECTED, PUBLISHED }
     ////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////
-    // Struct      
+    // Struct
     //
-    struct ContentSpace { 
+    struct ContentSpace {
         bool exists;
         bytes32 id;
         address owner;
         mapping(string => Revision) revisions;
         uint total;
         string lastRevision;
-    }   
+    }
 
-    struct Revision { 
+    struct Revision {
         bool exists;
         string hash;
         string parent;
@@ -32,7 +32,7 @@ contract ContentSpaceRegistry {
 
 
     ////////////////////////////////////////////////////
-    // Storage      
+    // Storage
     //
     mapping(bytes32 => ContentSpace) spaces;
     mapping(address => uint256) public nonces;
@@ -40,7 +40,7 @@ contract ContentSpaceRegistry {
 
 
     ////////////////////////////////////////////////////
-    // Events      
+    // Events
     //
     event SpaceCreated(bytes32 _id, address _owner);
     event RevisionPending(bytes32 _id, string _hash, string _parent_hash, address _author, uint _timestamp);
@@ -51,80 +51,80 @@ contract ContentSpaceRegistry {
 
 
     ////////////////////////////////////////////////////
-    // Constructor      
+    // Constructor
     //
 
     ////////////////////////////////////////////////////
 
 
     ////////////////////////////////////////////////////
-    // Meta-functions      
+    // Meta-functions
     //
-    function metaCreateSpace(bytes32 _id, address _owner, bytes _signature, uint256 _nonce) public returns (bool) {
-        address signer = getSigner(metaCreateSpaceHash(_id , _owner, _nonce), _signature, _nonce); 
+    function metaCreateSpace(bytes32 _id, address _owner, bytes memory _signature, uint256 _nonce) public returns (bool) {
+        address signer = getSigner(metaCreateSpaceHash(_id , _owner, _nonce), _signature, _nonce);
 
-        return createSpace(_id, _owner, signer); 
+        return createSpace(_id, _owner, signer);
     }
 
     function metaCreateSpaceHash(bytes32 _id, address _owner, uint256 _nonce) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), "createSpace", _id, _owner, _nonce));
     }
 
-    function metaPushRevision(bytes32 _id, string _hash, string _parent_hash, bytes _signature, uint256 _nonce) public returns (bool) {
-        address signer = getSigner(metaPushRevisionHash(_id , _hash, _parent_hash, _nonce), _signature, _nonce); 
+    function metaPushRevision(bytes32 _id, string memory _hash, string memory _parent_hash, bytes memory _signature, uint256 _nonce) public returns (bool) {
+        address signer = getSigner(metaPushRevisionHash(_id , _hash, _parent_hash, _nonce), _signature, _nonce);
 
-        return pushRevision(_id, _hash, _parent_hash, signer); 
+        return pushRevision(_id, _hash, _parent_hash, signer);
     }
 
-    function metaPushRevisionHash(bytes32 _id, string _hash, string _parent_hash, uint256 _nonce) public view returns (bytes32) {
+    function metaPushRevisionHash(bytes32 _id, string memory _hash, string memory _parent_hash, uint256 _nonce) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), "pushRevision", _id, _hash, _parent_hash, _nonce));
     }
 
-    function metaApproveRevision(bytes32 _id, string _hash, bytes _signature, uint256 _nonce) public returns (bool) {
-        address signer = getSigner(metaApproveRevisionHash(_id , _hash, _nonce), _signature, _nonce); 
+    function metaApproveRevision(bytes32 _id, string memory _hash, bytes memory _signature, uint256 _nonce) public returns (bool) {
+        address signer = getSigner(metaApproveRevisionHash(_id , _hash, _nonce), _signature, _nonce);
 
         return approveRevision(_id, _hash, signer);
     }
 
-    function metaApproveRevisionHash(bytes32 _id, string _hash, uint256 _nonce) public view returns (bytes32) {
+    function metaApproveRevisionHash(bytes32 _id, string memory _hash, uint256 _nonce) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), "approveRevision", _id, _hash, _nonce));
     }
 
-    function metaRejectRevision(bytes32 _id, string _hash, bytes _signature, uint256 _nonce) public returns (bool) {
-        address signer = getSigner(metaRejectRevisionHash(_id , _hash, _nonce), _signature, _nonce); 
+    function metaRejectRevision(bytes32 _id, string memory _hash, bytes memory _signature, uint256 _nonce) public returns (bool) {
+        address signer = getSigner(metaRejectRevisionHash(_id , _hash, _nonce), _signature, _nonce);
 
         return rejectRevision(_id, _hash, signer);
     }
 
-    function metaRejectRevisionHash(bytes32 _id, string _hash, uint256 _nonce) public view returns (bytes32) {
+    function metaRejectRevisionHash(bytes32 _id, string memory _hash, uint256 _nonce) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), "rejectRevision", _id, _hash, _nonce));
     }
     ////////////////////////////////////////////////////
 
 
     ////////////////////////////////////////////////////
-    // Public functions      
+    // Public functions
     //
     function createSpace(bytes32 _id, address _owner) public returns (bool) {
-        return createSpace(_id, _owner, msg.sender); 
+        return createSpace(_id, _owner, msg.sender);
     }
 
-    function pushRevision(bytes32 _id, string _hash, string _parent_hash) public returns (bool) {
-        return pushRevision(_id, _hash, _parent_hash, msg.sender); 
+    function pushRevision(bytes32 _id, string memory _hash, string memory _parent_hash) public returns (bool) {
+        return pushRevision(_id, _hash, _parent_hash, msg.sender);
     }
 
-    function approveRevision(bytes32 _id, string _hash) public returns (bool) {
-        return approveRevision(_id, _hash, msg.sender); 
+    function approveRevision(bytes32 _id, string memory _hash) public returns (bool) {
+        return approveRevision(_id, _hash, msg.sender);
     }
 
-    function rejectRevision(bytes32 _id, string _hash) public returns (bool) {
-        return approveRevision(_id, _hash, msg.sender); 
+    function rejectRevision(bytes32 _id, string memory _hash) public returns (bool) {
+        return approveRevision(_id, _hash, msg.sender);
     }
     ////////////////////////////////////////////////////
 
 
     ////////////////////////////////////////////////////
-    // Internal Functions      
+    // Internal Functions
     //
     function createSpace(bytes32 _id, address _owner, address _sender) internal returns (bool) {
 
@@ -147,7 +147,7 @@ contract ContentSpaceRegistry {
 
         }
 
-        spaces[_id] = space; 
+        spaces[_id] = space;
 
         // Events
         emit SpaceCreated(_id, space.owner);
@@ -155,7 +155,7 @@ contract ContentSpaceRegistry {
         return true;
     }
 
-    function pushRevision(bytes32 _id, string _hash, string _parent_hash, address _sender) internal returns (bool) {
+    function pushRevision(bytes32 _id, string memory _hash, string memory _parent_hash, address _sender) internal returns (bool) {
 
         // Validation
         require(_id[0] != 0, "_id cannot be empty");
@@ -190,7 +190,7 @@ contract ContentSpaceRegistry {
         return true;
     }
 
-    function approveRevision(bytes32 _id, string _hash, address _sender) internal returns (bool)  {
+    function approveRevision(bytes32 _id, string memory _hash, address _sender) internal returns (bool)  {
 
         // Validation
         require(_id[0] != 0, "_id cannot be empty");
@@ -205,15 +205,16 @@ contract ContentSpaceRegistry {
         spaces[_id].revisions[_hash].state = State.PUBLISHED;
         spaces[_id].lastRevision = _hash;
 
+
         // Events
         emit RevisionApproved(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, _sender, spaces[_id].revisions[_hash].timestamp);
         emit RevisionPublished(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, spaces[_id].revisions[_hash].timestamp);
 
         return true;
-    }   
+    }
 
-    function rejectRevision(bytes32 _id, string _hash, address _sender) internal returns (bool)  {
-        
+    function rejectRevision(bytes32 _id, string memory _hash, address _sender) internal returns (bool)  {
+
         // Validation
         require(_id[0] != 0, "_id cannot be empty");
         require(bytes(_hash).length  != 0, "_hash cannot be empty");
@@ -231,46 +232,24 @@ contract ContentSpaceRegistry {
         emit RevisionRejected(_id, _hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, _sender, spaces[_id].revisions[_hash].timestamp);
 
         return true;
-    }   
+    }
     ////////////////////////////////////////////////////
 
 
     ////////////////////////////////////////////////////
-    // Views      
+    // Views
     //
-    function getContentSpace(bytes32 _id) public view returns  (bytes32, address, string) {
-
+    function getContentSpace(bytes32 _id) public view returns  (bytes32, address, string memory) {
         require(spaces[_id].exists, "Space doesn't exist");
 
-        return (spaces[_id].id, spaces[_id].owner, spaces[_id].lastRevision); 
+        return (spaces[_id].id, spaces[_id].owner, spaces[_id].lastRevision);
     }
 
-    function getRevision(bytes32 _id, string _hash) public view returns  (string, string, address, State, uint) {
+    function getRevision(bytes32 _id, string memory _hash) public view returns  (string memory, string memory, address, State, uint) {
         require(spaces[_id].exists, "Space doesn't exist");
         require(spaces[_id].revisions[_hash].exists, "Revisions doesn't exist on this space");
 
         return (spaces[_id].revisions[_hash].hash, spaces[_id].revisions[_hash].parent, spaces[_id].revisions[_hash].author, spaces[_id].revisions[_hash].state, spaces[_id].revisions[_hash].timestamp);
-    }
-
-    function isPending(bytes32 _id, string _hash) public view returns  (bool) {
-        require(spaces[_id].exists, "Space doesn't exist");
-        require(spaces[_id].revisions[_hash].exists, "Revisions doesn't exist on this space");
-
-        return spaces[_id].revisions[_hash].state == State.PENDING;
-    }
-
-    function isPublished(bytes32 _id, string _hash) public view returns  (bool) {
-        require(spaces[_id].exists, "Space doesn't exist");
-        require(spaces[_id].revisions[_hash].exists, "Revisions doesn't exist on this space");
-
-        return spaces[_id].revisions[_hash].state == State.PUBLISHED;
-    }
-
-    function isRejected(bytes32 _id, string _hash) public view returns  (bool) {
-        require(spaces[_id].exists, "Space doesn't exist");
-        require(spaces[_id].revisions[_hash].exists, "Revisions doesn't exist on this space");
-
-        return spaces[_id].revisions[_hash].state == State.REJECTED;
     }
 
     function getNonce(address _id) public view returns(uint) {
@@ -280,12 +259,12 @@ contract ContentSpaceRegistry {
 
 
     ////////////////////////////////////////////////////
-    // UTILS      
+    // UTILS
     //
-    function getSigner(bytes32 _msg, bytes _signature, uint256 _nonce) internal returns (address){
+    function getSigner(bytes32 _msg, bytes memory _signature, uint256 _nonce) internal returns (address){
 
-        address signer = recoverSignature(_msg, _signature); 
-        
+        address signer = recoverSignature(_msg, _signature);
+
         require(signer != address(0), "cannot recover the signature");
         require(_nonce == nonces[signer], "wrong nonce");
 
@@ -294,7 +273,7 @@ contract ContentSpaceRegistry {
         return signer;
     }
 
-    function recoverSignature(bytes32 _msg, bytes _signature) internal pure returns (address){
+    function recoverSignature(bytes32 _msg, bytes memory _signature) internal pure returns (address){
         bytes32 r;
         bytes32 s;
         uint8 v;

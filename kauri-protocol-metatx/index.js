@@ -23,15 +23,9 @@ const smartContract = new SmartContract(provider, provider.getAddress(constant._
 var app    = express();    
 var router = express.Router();
 
-router.get('/', function (req, res, next) {
-    console.log("[DEBUG] HTTP GET /", req.body) ;   
-    res.json({"message": "hello world"}); 
-});
-
 router.post('/relay/space', async function (req, res, next) {
     console.log("[DEBUG] HTTP POST /relay/space", req.body) ; 
 
-    // Forward the transaction to the proxy
     const tx = await smartContract.metaCreateSpace(
         req.body.id, 
         req.body.owner, 
@@ -39,17 +33,12 @@ router.post('/relay/space', async function (req, res, next) {
         req.body.nonce);
     console.log("[DEBUG] tx="+tx);
 
-    // Build response
-    let response = {
-        "tx": tx
-    }
-    res.json(response); 
+    res.json({ "tx": tx }); 
 });
 
 router.post('/relay/revision', async function (req, res, next) {
     console.log("[DEBUG] HTTP POST /relay/revision", req.body) ; 
 
-    // Forward the transaction to the proxy
     const tx = await smartContract.metaPushRevision(
         req.body.id, 
         req.body.hash,
@@ -58,17 +47,12 @@ router.post('/relay/revision', async function (req, res, next) {
         req.body.nonce);
     console.log("[DEBUG] tx="+tx);
 
-    // Build response
-    let response = {
-        "tx": tx
-    }
-    res.json(response); 
+    res.json({ "tx": tx }); 
 });
 
 router.post('/relay/revision/approve', async function (req, res, next) {
     console.log("[DEBUG] HTTP POST /relay/revision/approve", req.body) ; 
 
-    // Forward the transaction to the proxy
     const tx = await smartContract.metaApproveRevision(
         req.body.id, 
         req.body.hash, 
@@ -76,17 +60,12 @@ router.post('/relay/revision/approve', async function (req, res, next) {
         req.body.nonce);
     console.log("[DEBUG] tx="+tx);
 
-    // Build response
-    let response = {
-        "tx": tx
-    }
-    res.json(response); 
+    res.json({ "tx": tx }); 
 });
 
 router.post('/relay/revision/reject', async function (req, res, next) {
     console.log("[DEBUG] HTTP POST /relay/revision/reject", req.body) ; 
 
-    // Forward the transaction to the proxy
     const tx = await smartContract.metaRejectRevision(
         req.body.id, 
         req.body.hash, 
@@ -94,11 +73,7 @@ router.post('/relay/revision/reject', async function (req, res, next) {
         req.body.nonce);
     console.log("[DEBUG] tx="+tx);
 
-    // Build response
-    let response = {
-        "tx": tx
-    }
-    res.json(response); 
+    res.json({ "tx": tx }); 
 });
 
 
