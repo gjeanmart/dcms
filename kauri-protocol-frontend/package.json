@@ -4,14 +4,15 @@
   "private": true,
   "dependencies": {
     "axios": "^0.18.0",
-    "kauri-protocol": "file:../kauri-protocol-core",
+    "kauri-protocol": "1.0.1",
     "react": "^16.6.3",
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.6.3",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.1",
     "react-timestamp": "^4.4.0",
-    "react-web3": "^1.2.0"
+    "react-web3": "^1.2.0",
+    "xmlhttprequest": "^1.8.0"
   },
   "scripts": {
     "start": "react-scripts start",

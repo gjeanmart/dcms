@@ -17,7 +17,7 @@
      * HAPPY PATH
      ********************/
     it('should create a space', async () => {
-        const spaceId = 'HelloWorld0';
+        const spaceId = 'HelloWorld';
         const owner = accounts[0];
 
         const space = await createSpace(spaceId, owner, {'from': owner});
@@ -26,7 +26,7 @@
     });
 
     it('should publish a revision', async () => {
-        const spaceId = 'HelloWorld1';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx1';
         const owner = accounts[0];
         const author = accounts[0];
@@ -42,7 +42,7 @@
     });
 
     it('should be pending', async () => {
-        const spaceId = 'HelloWorld2';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx2';
         const owner = accounts[0];
         const author = accounts[1];
@@ -58,7 +58,7 @@
     });
 
     it('should be published after approval', async () => {
-        const spaceId = 'HelloWorld3';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx3';
         const owner = accounts[0];
         const author = accounts[1];
@@ -79,7 +79,7 @@
     });
 
     it('should be rejected after rejection', async () => {
-        const spaceId = 'HelloWorld4';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx4';
         const owner = accounts[0];
         const author = accounts[1];
@@ -100,7 +100,7 @@
     });
 
     it('should have two revisions', async () => {
-        const spaceId = 'HelloWorld20';
+        const spaceId = 'HelloWorld';
         const revisionHash1 = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx4';
         const revisionHash2 = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx5';
         const owner = accounts[0];
@@ -124,7 +124,7 @@
     });
 
     it('should have a lastRevision', async () => {
-        const spaceId = 'HelloWorld21';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx1';
         const owner = accounts[0];
         const author = accounts[0];
@@ -145,11 +145,34 @@
     });
 
 
+
+    /*******************
+     * META TRANSACTION
+     ********************/
+    it('should create a space with metatransaction', async () => {
+        const etherless = {
+          "privatekey": "43f2ee33c522046e80b67e96ceb84a05b60b9434b0ee2e3ae4b1311b9f5dcc46",
+          "account": "0xBd2e9CaF03B81e96eE27AD354c579E1310415F39"
+        }
+
+        const spaceId = 'HelloWorld Meta';
+        const owner = etherless.account;
+        const relayer = accounts[1];
+
+        const nonce = await getNonce(owner);
+        const hash = await metaCreateSpaceHash(spaceId, owner, nonce);
+        const signature = await sign(etherless.privatekey, hash);
+
+        const space = await metaCreateSpace(spaceId, owner, nonce, signature, {'from': relayer});
+        assert.equal(space.id, spaceId);
+        assert.equal(space.owner, owner);
+    })
+
     /*******************
      * EXCEPTION
      ********************/
     it('should throw an exception because space already exists', async () => {
-      const spaceId = 'HelloWorld5';
+      const spaceId = 'HelloWorld';
       const owner = accounts[0];
 
       const space = await createSpace(spaceId, owner, {'from': owner});
@@ -160,7 +183,7 @@
     });
 
     it('should throw an exception because space doesn\'t exist', async () => {
-        const spaceId = 'HelloWorld6';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx5';
         const owner = accounts[0];
         const author = accounts[0];
@@ -169,7 +192,7 @@
     });
 
     it('should throw an exception because revision already exist', async () => {
-        const spaceId = 'HelloWorld7';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx7';
         const owner = accounts[0];
         const author = accounts[0];
@@ -187,7 +210,7 @@
     });
 
     it('should throw an exception because author can\'t approve revision', async () => {
-        const spaceId = 'HelloWorld8';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx8';
         const owner = accounts[0];
         const author = accounts[1];
@@ -205,7 +228,7 @@
     });
 
     it('should throw an exception because author can\'t approve revision', async () => {
-        const spaceId = 'HelloWorld9';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx9';
         const owner = accounts[0];
         const author = accounts[1];
@@ -223,7 +246,7 @@
     });
 
     it('should throw an exception because author revision doesn\'t exist', async () => {
-        const spaceId = 'HelloWorld10';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx10';
         const owner = accounts[0];
         const author = accounts[1];
@@ -236,7 +259,7 @@
     });
 
     it('should throw an exception because author revision not pending', async () => {
-        const spaceId = 'HelloWorld11';
+        const spaceId = 'HelloWorld';
         const revisionHash = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx11';
         const owner = accounts[0];
         const author = accounts[0];
@@ -255,7 +278,7 @@
 
 
     it('should not accept a second revision without parent', async () => {
-        const spaceId = 'HelloWorld12';
+        const spaceId = 'HelloWorld';
         const revisionHash1 = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx4';
         const revisionHash2 = 'zdpuAsTWohStBokD3tDRuFDSpveBTtQrZbfHZKjjBoLYRrvx5';
         const owner = accounts[0];
@@ -273,29 +296,6 @@
 
         await catchRevert(pushRevision(spaceId, revisionHash2, null, {'from': author}));
     });
-
-
-    /*******************
-     * META TRANSACTION
-     ********************/
-    it('should create a space with metatransaction', async () => {
-        const etherless = {
-          "privatekey": "43f2ee33c522046e80b67e96ceb84a05b60b9434b0ee2e3ae4b1311b9f5dcc46",
-          "account": "0xBd2e9CaF03B81e96eE27AD354c579E1310415F39"
-        }
-
-        const spaceId = 'HelloWorld Meta1';
-        const owner = etherless.account;
-        const relayer = accounts[1];
-
-        const nonce = await getNonce(owner);
-        const hash = await metaCreateSpaceHash(spaceId, owner, nonce);
-        const signature = await sign(etherless.privatekey, hash);
-
-        const space = await metaCreateSpace(spaceId, owner, nonce, signature, {'from': relayer});
-        assert.equal(space.id, spaceId);
-        assert.equal(space.owner, owner);
-    })
 
   });
 

@@ -32,9 +32,9 @@
 
         return {
             'connections': {
-                'ethereum': args.connections.ethereum, 
+                'ethereum': args.connections.ethereum,
                 'ipfs': args.connections.ipfs
-            }, 
+            },
             'registryArtifact': JSON.parse(fs.readFileSync(contract, 'utf8')),
             'registryAddress': args.registry,
             'web3': web3,
@@ -43,7 +43,7 @@
     };
 
     Config.write = function(conf) {
-        let data = JSON.stringify(conf);  
+        let data = JSON.stringify(conf);
         fs.writeFileSync(configFile, data);
     };
 
@@ -59,6 +59,6 @@
     Config.exists = function() {
         return fs.existsSync(configFile);
     }
-    
+
     module.exports = Config;
 })();

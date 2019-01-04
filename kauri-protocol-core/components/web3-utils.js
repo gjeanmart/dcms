@@ -3,49 +3,26 @@
 
     const   truffleContract = require('truffle-contract');
 
-
     let Web3Utils = {
-
         'getCurrentAccount': async (web3) => {
-            return new Promise( (resolve, reject) => {
-                web3.eth.getCoinbase((err, res) => {
-                    if(err) reject(err);
-                    resolve(res);
-                })
-            });
+            return await web3.eth.getCoinbase();
         },
-
         'fetchContract': async (artifact, web3, contractAddress) => {
-            return new Promise( (resolve, reject) => {
-                let contract = truffleContract(artifact);
-                contract.setProvider(web3.currentProvider);
+            let contract = truffleContract(artifact);
+            contract.setProvider(web3.currentProvider);
 
-                contract.at(contractAddress).then(function(instance) {
-                    resolve(instance);
-                });
-            });
+            return await contract.at(contractAddress);
         },
-
         'deployContract': async (artifact, web3, fromAddress) => {
-            return new Promise( (resolve, reject) => {
-                let contract = truffleContract(artifact);
-                contract.setProvider(web3.currentProvider);
-                contract.new({'from': fromAddress, 'gas': 6500000}).then(function(instance) {
-                    resolve(instance);
-                });
-            });
-        },
+            let contract = truffleContract(artifact);
+            contract.setProvider(web3.currentProvider);
 
+            return await contract.new({'from': fromAddress, 'gas': 6500000});
+        },
         'getTransaction': async (web3, transactionHash) => {
-            return new Promise( (resolve, reject) => {
-                web3.eth.getTransaction(transactionHash, (err, res) => {
-                    if(err) reject(err);
-                    resolve(res);
-                })
-            });
-        },
-
+            return await web3.eth.getTransaction(transactionHash);
+        }
     };
-    
+
     module.exports = Web3Utils;
 })();

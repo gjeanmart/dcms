@@ -12,7 +12,7 @@ const mime             = require('mime');
 const fileExtension    = require('file-extension');
 
 program
-    .version('0.0.1')
+    .version('0.0.2')
     .description('Kauri');
 
 program
@@ -22,18 +22,18 @@ program
     .option('-i, --ipfs <ipfs>', 'IPFS node endpoint', null, 'http://localhost:5001', false)
     .option('-r, --registry <registry>', 'Registry ("new" or contract address) to connect to', null, 'new', false)
     .option('-m, --mnemonic <mnemonic>', 'Mnemonic', null, null, false)
-    .option('-x, --index <index>', 'Mnemonic', program.INT, null, false)
+    .option('-x, --index <index>', 'Mnemonic address index', program.INT, null, false)
     .action(async function (args, options, logger) {
 
         try {
 
             const conf = {
                 'connections': {
-                    'ethereum': options.ethereum, 
+                    'ethereum': options.ethereum,
                     'ipfs': options.ipfs
-                }, 
-                'registry': options.registry, 
-                'mnemonic': options.mnemonic, 
+                },
+                'registry': options.registry,
+                'mnemonic': options.mnemonic,
                 'index': options.index,
                 'enableMetaTx': false
             };
@@ -65,7 +65,7 @@ program
         try {
 
             let kauri = await Kauri.init(config.load());
-            
+
             let res = await kauri.createSpace(args.space, options.owner);
 
             logger.info('Content ' + res.id + ' created (owner: ' + res.owner + ')');
@@ -87,9 +87,9 @@ program
             let kauri = await Kauri.init(config.load());
 
             if(args.revision == 'all') {
-                db.getRevisions(args.space).map(async function(r) { 
+                db.getRevisions(args.space).map(async function(r) {
                     console.log("r="+r)
-                    await kauri.pushRevision(args.space, r); 
+                    await kauri.pushRevision(args.space, r);
                     db.removeRevision(args.space, r);
                 });
             } else {
@@ -173,7 +173,7 @@ program
             let attributes = parseKeyValue(options.attributes) || {};
             attributes.title = attributes.title || path.basename(args.file);
             attributes.mimetype = attributes.mimetype || mime.getType(fileExtension(path.basename(args.file)));
- 
+
             // Store the revision
             let res = await kauri.createRevision(args.space, new Buffer(data), attributes, options.parent);
 
@@ -258,7 +258,7 @@ program
             logger.error('Error: ' + err);
         }
     });
-    
+
 program
     .command('config delete')
     .description('Delete configuration')

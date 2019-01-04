@@ -1,6 +1,6 @@
 {
   "name": "kauri-protocol",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -12,8 +12,8 @@
     "axios": "^0.18.0",
     "cids": "^0.5.5",
     "ipfs-api": "^24.0.2",
-    "truffle-contract": "^3.0.1",
+    "truffle-contract": "^4.0.1",
     "url-parse": "^1.4.3",
-    "web3": "0.20.6"
+    "xmlhttprequest": "^1.8.0"
   }
 }
